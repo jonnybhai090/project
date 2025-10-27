@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UNI Tech Services — Trusted Home Technicians</title>
+  <meta name="description" content="UNI Tech Services - Find verified technicians for plumbing, electrical, appliance repair and more." />
+  <style>
+    /* ---------- Base & Layout ---------- */
+    :root{
+      --bg:#f4f7fb; --card:#ffffff; --muted:#6b7280; --accent:#0ea5a4; --accent-2:#0b74d1;
+      --radius:12px; --shadow: 0 8px 30px rgba(12,18,31,0.06); --maxw:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#102a43;background:linear-gradient(180deg,var(--bg),#eef6fb);}
+    .wrap{max-width:var(--maxw);margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:14px}
+
+    /* hero */
+    .hero{display:grid;grid-template-columns:1fr 340px;gap:22px;margin-top:20px;align-items:start}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .searchbar{display:flex;gap:8px}
+    .searchbar input{flex:1;padding:12px;border-radius:10px;border:1px solid #e6eef6}
+    .btn{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.alt{background:transparent;border:1px solid #d2dce8;color:var(--accent-2)}
+
+    /* services grid */
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .chip{padding:8px 12px;border-radius:999px;background:#f1f5f9;border:1px solid #e6eef6;font-size:13px;cursor:pointer}
+    .chip.active{background:linear-gradient(90deg,#e6fffb,#e6f7ff);border-color:rgba(11,116,209,0.12)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px}
+    .service-card{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:12px;border:1px solid #eef3f8;background:linear-gradient(180deg,#fff,#fbfdff);cursor:pointer;transition:transform .18s,box-shadow .18s}
+    .service-card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(12,18,31,0.06)}
+    .service-img{width:100%;height:160px;border-radius:10px;object-fit:cover;background:#eef6f7}
+    .service-title{font-weight:700}
+    .service-sub{color:var(--muted);font-size:13px}
+    .service-meta{display:flex;justify-content:space-between;align-items:center}
+
+    /* sidebar */
+    aside.sidebar{min-width:260px}
+    .booking-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+    .book-item{background:#fbfdff;padding:10px;border-radius:10px;border:1px solid #eef6fb;display:flex;justify-content:space-between;align-items:center}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(6,12,20,0.45);z-index:60;padding:20px}
+    .modal.open{display:flex}
+    .modal-card{width:900px;max-width:980px;background:#fff;border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr 380px;gap:18px;box-shadow:0 18px 60px rgba(12,18,31,0.28);max-height:90vh;overflow:auto}
+    .modal-left img{width:100%;height:260px;object-fit:cover;border-radius:10px}
+    .modal-left h2{margin:6px 0}
+    .price-tag{font-weight:800;color:var(--accent-2);font-size:18px}
+    .badge{font-size:12px;padding:6px 8px;border-radius:8px;background:#f8fafc;border:1px solid #eef3f8;display:inline-block}
+
+    /* form */
+    .field{margin-top:8px}
+    input[type="text"],input[type="tel"],input[type="datetime-local"],textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #eef6fb}
+    textarea{min-height:80px;resize:vertical}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* mobile */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr}
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .modal-card{grid-template-columns:1fr}
+      .modal-left img{height:200px}
+    }
+    @media (max-width:560px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px;padding:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo">UNI</div>
+        <div>
+          <h1>UNI Tech Services</h1>
+          <p class="lead">Verified technicians · Transparent pricing · Instant booking</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn alt" onclick="showBookingsPanel()">My Bookings</button>
+        <button class="btn" onclick="openDemoSignup()">Sign up</button>
+      </div>
+    </header>
+
+    <!-- Hero + Sidebar -->
+    <section class="hero">
+      <div class="card">
+        <h2 style="margin:0 0 8px 0">Find a technician near you</h2>
+        <p class="small">Plumbers, electricians, AC servicing, cleaning and more — verified professionals in your city.</p>
+
+        <div style="margin-top:12px" class="searchcard">
+          <div class="searchbar">
+            <input id="q" placeholder="Search for services (e.g., AC repair, plumber, electrician)" />
+            <button class="btn" onclick="applyFilter()">Search</button>
+          </div>
+
+          <div class="filters" id="filters" style="margin-top:12px">
+            <button class="chip active" data-cat="all" onclick="selectFilter(event)">All</button>
+            <button class="chip" data-cat="plumbing" onclick="selectFilter(event)">Plumbing</button>
+            <button class="chip" data-cat="electrical" onclick="selectFilter(event)">Electrical</button>
+            <button class="chip" data-cat="appliance" onclick="selectFilter(event)">Appliance</button>
+            <button class="chip" data-cat="cleaning" onclick="selectFilter(event)">Cleaning</button>
+            <button class="chip" data-cat="salon" onclick="selectFilter(event)">Salon at Home</button>
+          </div>
+
+          <!-- services -->
+          <div id="list" class="grid" aria-live="polite" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="card sidebar">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Quick Bookings</strong>
+          <small class="small" id="booking-count">0</small>
+        </div>
+        <div id="bookingsArea" class="booking-list" style="margin-top:8px">
+          <div style="color:var(--muted)" id="no-bookings-msg">No bookings yet — book a technician to see it here.</div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #eef6fb;margin:12px 0">
+
+        <div>
+          <strong>Why UNI Tech?</strong>
+          <ul style="color:var(--muted);padding-left:18px;margin-top:8px">
+            <li>Verified technicians with ratings</li>
+            <li>Transparent rates & service warranty</li>
+            <li>Easy booking and cancellation</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <small>&copy; <span id="yr"></span> UNI Tech Services • Prototype (replace with backend & images for production)</small>
+    </footer>
+  </div>
+
+  <!-- Modal: Service details + Booking -->
+  <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card" role="document">
+      <div class="modal-left">
+        <img id="modalImg" src="" alt="Service image" />
+        <h2 id="modalTitle">Service</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <div class="price-tag" id="modalPrice">₹0</div>
+          <div class="badge" id="modalRating">⭐ 0.0</div>
+        </div>
+        <p class="small" id="modalTown" style="margin-top:8px;color:var(--muted)"></p>
+        <p id="modalDesc" style="margin-top:12px;color:#16324f"></p>
+      </div>
+
+      <div class="modal-right" style="padding:4px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Book this service</strong>
+          <button class="chip" onclick="closeModal()" style="padding:8px 12px;border-radius:8px;border:1px solid #eef6fb;background:#fff">Close</button>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="field">
+            <label class="small">Your name</label>
+            <input id="custName" type="text" placeholder="Enter your name" />
+          </div>
+          <div class="field">
+            <label class="small">Phone</label>
+            <input id="custPhone" type="tel" placeholder="Phone number" />
+          </div>
+          <div class="field">
+            <label class="small">Date & Time</label>
+            <input id="custWhen" type="datetime-local" />
+          </div>
+          <div class="field">
+            <label class="small">Address</label>
+            <input id="custAddr" type="text" placeholder="House / building, area, city" />
+          </div>
+          <div class="field">
+            <label class="small">Notes (optional)</label>
+            <textarea id="custNotes" placeholder="Any special instructions"></textarea>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn alt" onclick="closeModal()" style="padding:10px 14px">Cancel</button>
+            <button class="btn" onclick="confirmBooking()">Confirm Booking</button>
+          </div>
+
+          <p id="modalHelp" class="small" style="margin-top:10px;color:var(--muted)"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bookings Panel (small full-screen drawer) -->
+  <div id="bookingsPanel" style="position:fixed;right:0;top:0;bottom:0;width:360px;background:#fff;box-shadow:-10px 0 30px rgba(12,18,31,0.12);transform:translateX(100%);transition:transform .28s;z-index:80;padding:18px;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>My Bookings</strong>
+      <button class="chip" onclick="closeBookingsPanel()">Close</button>
+    </div>
+    <div id="panelBookings" style="margin-top:12px"></div>
+  </div>
+
+  <script>
+    /* ---------- Mock service dataset (replace with API in production) ---------- */
+    const SERVICES = [
+      {id:1,slug:'ac-service',title:'AC Servicing & Repair',category:'appliance',price:799,rating:4.6,town:'Vijayawada',img:'https://images.unsplash.com/photo-1581579185169-1c7f64b8a6e9',desc:'Comprehensive AC service: gas check, cleaning, minor repairs, and performance tune-up. Certified technicians.'},
+      {id:2,slug:'plumbing',title:'Plumbing & Leak Repair',category:'plumbing',price:350,rating:4.7,town:'Vijayawada',img:'https://images.unsplash.com/photo-1581579185169-1c7f64b8a6e9?crop=entropy',desc:'Fix pipe leaks, clogged drains, install faucets, and bathroom fittings. Fast response and guarantee on repairs.'},
+      {id:3,slug:'electrical',title:'Electrical Repair & Wiring',category:'electrical',price:400,rating:4.5,town:'Vijayawada',img:'https://images.unsplash.com/photo-1581091215367-59ab6d41eecf',desc:'Switchboard repairs, wiring, fan/fixture installation, inverter basics. Certified electricians and safety-first approach.'},
+      {id:4,slug:'appliance',title:'Appliance Repair (Fridge, Washing Machine)',category:'appliance',price:499,rating:4.3,town:'Gannavaram',img:'https://images.unsplash.com/photo-1581093588401-22e6d0d8a58b',desc:'Home appliance diagnostics and repairs. We service most major brands with verified spare parts on request.'},
+      {id:5,slug:'cleaning',title:'Home Deep Cleaning',category:'cleaning',price:1299,rating:4.8,town:'Vijayawada',img:'https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2',desc:'Deep cleaning for homes, kitchens, bathrooms and living areas. Trained cleaners and eco-friendly products.'},
+      {id:6,slug:'salon',title:'Salon at Home',category:'salon',price:599,rating:4.6,town:'Tadepalli',img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1',desc:'Beauty and grooming at home: haircuts, styling, makeup and wellness services by trained professionals.'}
+    ];
+
+    /* ---------- Local bookings store ---------- */
+    let bookings = JSON.parse(localStorage.getItem('uni_bookings') || '[]');
+
+    /* ---------- DOM refs ---------- */
+    const listEl = document.getElementById('list');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalPrice = document.getElementById('modalPrice');
+    const modalRating = document.getElementById('modalRating');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalTown = document.getElementById('modalTown');
+    const modalHelp = document.getElementById('modalHelp');
+
+    const bookingsArea = document.getElementById('bookingsArea');
+    const bookingCount = document.getElementById('booking-count');
+    const noBookingsMsg = document.getElementById('no-bookings-msg');
+
+    const panel = document.getElementById('bookingsPanel');
+    const panelBookings = document.getElementById('panelBookings');
+
+    let currentService = null;
+
+    /* ---------- Render service cards ---------- */
+    function renderServices(items){
+      listEl.innerHTML = '';
+      if(!items.length){
+        listEl.innerHTML = '<div style="grid-column:1/-1;color:var(--muted)">No services found — try a different search.</div>';
+        return;
+      }
+      items.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        card.innerHTML = `
+          <img class="service-img" src="${s.img}?auto=format&fit=crop&w=900&q=60" alt="${s.title}" />
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div class="service-title">${s.title}</div>
+                <div class="service-sub small">${s.town} · ${s.category.charAt(0).toUpperCase()+s.category.slice(1)}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:800;color:var(--accent-2)">₹${s.price}</div>
+                <div class="small">⭐ ${s.rating.toFixed(1)}</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="chip" onclick="openService(${s.id})">Details</button>
+            <button class="btn" onclick="openService(${s.id}, true)">Book</button>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    /* ---------- Filter & Search ---------- */
+    function applyFilter(){
+      const active = document.querySelector('.chip.active')?.dataset?.cat || 'all';
+      const q = (document.getElementById('q')?.value || '').toLowerCase().trim();
+      let items = SERVICES.slice();
+      if(active !== 'all') items = items.filter(x=>x.category===active);
+      if(q) items = items.filter(x => (x.title + ' ' + x.category + ' ' + x.town).toLowerCase().includes(q));
+      items.sort((a,b)=> b.rating - a.rating);
+      renderServices(items);
+    }
+
+    function selectFilter(e){
+      document.querySelectorAll('.filters .chip').forEach(c=>c.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      applyFilter();
+    }
+
+    /* ---------- Modal open & populate ---------- */
+    function openService(id, openBooking=false){
+      const s = SERVICES.find(x=>x.id===id);
+      if(!s) return alert('Service not found');
+      currentService = s;
+      modalImg.src = s.img + '?auto=format&fit=crop&w=1200&q=70';
+      modalTitle.textContent = s.title;
+      modalPrice.textContent = '₹' + s.price;
+      modalRating.textContent = '⭐ ' + s.rating.toFixed(1);
+      modalDesc.textContent = s.desc;
+      modalTown.textContent = s.town + ' · ' + (s.category.charAt(0).toUpperCase()+s.category.slice(1));
+      modalHelp.textContent = 'Typical charges shown. Final price may vary after technician inspection.';
+      // prefill user details if available
+      const u = JSON.parse(localStorage.getItem('uni_user') || 'null');
+      if(u){ document.getElementById('custName').value = u.name || ''; document.getElementById('custPhone').value = u.phone || ''; }
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      // if user clicked Book from card directly, focus on date field
+      if(openBooking){
+        setTimeout(()=>{ document.getElementById('custWhen').focus(); }, 250);
+      }
+    }
+
+    function closeModal(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+      // clear form (keep user name/phone saved optionally)
+      document.getElementById('custWhen').value = '';
+      document.getElementById('custAddr').value = '';
+      document.getElementById('custNotes').value = '';
+    }
+
+    /* ---------- Booking actions ---------- */
+    function confirmBooking(){
+      if(!currentService) return alert('No service selected');
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const when = document.getElementById('custWhen').value;
+      const addr = document.getElementById('custAddr').value.trim();
+      const notes = document.getElementById('custNotes').value.trim();
+
+      if(!name || !phone){
+        return alert('Please enter your name and phone.');
+      }
+      if(!when){
+        return alert('Please select date & time.');
+      }
+
+      // create booking object
+      const booking = {
+        id: Date.now(),
+        serviceId: currentService.id,
+        serviceTitle: currentService.title,
+        price: currentService.price,
+        time: when,
+        name, phone, addr, notes,
+        createdAt: new Date().toISOString()
+      };
+
+      bookings.unshift(booking);
+      localStorage.setItem('uni_bookings', JSON.stringify(bookings));
+      // optional: save user info for quick prefill
+      localStorage.setItem('uni_user', JSON.stringify({name,phone}));
+
+      renderBookings();
+      closeModal();
+      alert('Booking confirmed! (Demo) — check "My Bookings" to view or cancel.');
+    }
+
+    function renderBookings(){
+      // sidebar
+      bookingsArea.innerHTML = '';
+      bookingCount.textContent = bookings.length;
+      if(!bookings.length){
+        noBookingsMsg.style.display = 'block';
+      } else {
+        noBookingsMsg.style.display = 'none';
+        bookings.slice(0,6).forEach(b=>{
+          const div = document.createElement('div');
+          div.className = 'book-item';
+          const left = document.createElement('div');
+          left.innerHTML = `<div style="font-weight:700">${b.serviceTitle}</div><div class="small" style="color:var(--muted)">${new Date(b.time).toLocaleString()}</div>`;
+          const right = document.createElement('div');
+          right.innerHTML = `<button class="chip" onclick="cancelBooking(${b.id})">Cancel</button>`;
+          div.appendChild(left); div.appendChild(right);
+          bookingsArea.appendChild(div);
+        });
+      }
+
+      // bookings panel
+      panelBookings.innerHTML = '';
+      if(!bookings.length){
+        panelBookings.innerHTML = '<div style="color:var(--muted);margin-top:10px">No bookings yet.</div>';
+      } else {
+        bookings.forEach(b=>{
+          const bdiv = document.createElement('div');
+          bdiv.style.borderBottom='1px solid #eef6fb'; bdiv.style.padding='10px 0';
+          bdiv.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.serviceTitle}</strong><div class="small" style="color:var(--muted)">${new Date(b.time).toLocaleString()}</div></div><div><div style="text-align:right;color:var(--muted)">₹${b.price}</div><button class="chip" style="margin-top:8px" onclick="cancelBooking(${b.id})">Cancel</button></div></div><div class="small" style="color:var(--muted);margin-top:8px">${b.name} · ${b.phone}<div style="margin-top:6px">${b.addr || ''}</div></div>`;
+          panelBookings.appendChild(bdiv);
+        });
+      }
+    }
+
+    function cancelBooking(id){
+      if(!confirm('Cancel this booking?')) return;
+      bookings = bookings.filter(b=>b.id !== id);
+      localStorage.setItem('uni_bookings', JSON.stringify(bookings));
+      renderBookings();
+      renderServices(SERVICES); // keep view updated
+    }
+
+    /* ---------- Bookings panel open/close ---------- */
+    function showBookingsPanel(){ panel.style.transform = 'translateX(0)'; }
+    function closeBookingsPanel(){ panel.style.transform = 'translateX(100%)'; }
+
+    /* ---------- Demo signup (local) ---------- */
+    function openDemoSignup(){
+      const name = prompt('Enter your name (demo sign-up):') || '';
+      const phone = prompt('Phone (optional):') || '';
+      if(name) {
+        localStorage.setItem('uni_user', JSON.stringify({name,phone}));
+        alert('Demo sign-up saved locally. You will be prefilled next time.');
+      }
+    }
+
+    /* ---------- Initial render ---------- */
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    renderServices(SERVICES);
+    renderBookings();
+
+    /* ---------- Extras: keyboard shortcuts & accessibility ---------- */
+    window.addEventListener('keydown', e=>{
+      if(e.key==='Escape'){ closeModal(); closeBookingsPanel(); }
+      if(e.key==='/' && document.activeElement.id!=='q'){ e.preventDefault(); document.getElementById('q').focus(); }
+    });
+
+    // allow clicking outside modal to close
+    document.getElementById('modal').addEventListener('click', (ev)=>{
+      if(ev.target === document.getElementById('modal')) closeModal();
+    });
+  </script>
+</body>
+</html>
